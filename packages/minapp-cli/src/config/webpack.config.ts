@@ -4,6 +4,7 @@
 *******************************************************************/
 
 import * as webpack from 'webpack'
+import CopyWebpackPlugin from 'copy-webpack-plugin';
 import * as path from 'path'
 import * as fs from 'fs-extra'
 import {localConfig} from './local'
@@ -64,6 +65,11 @@ const plugins: any[] = [
   new webpack.EnvironmentPlugin(['NODE_ENV']),
   new ExtractMinappCode(env),
   new RemoveLessCache(env),
+  new CopyWebpackPlugin([
+    { from: './src/assets/*', to: 'assets', flatten: true },
+  ], {
+    debug: 'info',
+  })
 ]
 if (env.hasServer) {
   plugins.push(new WriteFile(env))
