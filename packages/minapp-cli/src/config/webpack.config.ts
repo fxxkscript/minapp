@@ -4,7 +4,7 @@
 *******************************************************************/
 
 import * as webpack from 'webpack'
-import CopyWebpackPlugin from 'copy-webpack-plugin';
+import * as CopyWebpackPlugin from 'copy-webpack-plugin';
 import * as path from 'path'
 import * as fs from 'fs-extra'
 import {localConfig} from './local'
@@ -155,6 +155,7 @@ let wpConf: webpack.Configuration = {
 wpConf.module.rules.push({parser: { system: false, amd: false }})
 
 wpConf = local.webpack(wpConf, webpack)
+// @ts-ignore
 wpConf.devServer.stats = wpConf.stats
 if (!wpConf.output || wpConf.output.filename !== env.output) throw new Error('webpack output.filename can not be changed')
 if (!wpConf.entry || typeof wpConf.entry !== 'string') throw new Error('minapp webpack entry must be string, but got ' + JSON.stringify(wpConf.entry))

@@ -1,7 +1,7 @@
 {
 	"name": "@changjinglu/cli",
 	"description": "minapp 命令行工具，用于创建项目、开发项目、编译项目",
-	"version": "2.2.0",
+	"version": "2.2.1",
 	"bin": {
 		"supra": "dist/bin/minapp.js"
 	},
@@ -61,6 +61,7 @@
 	},
 	"devDependencies": {
 		"@types/autoprefixer": "^6.7.3",
+		"@types/copy-webpack-plugin": "^4.4.2",
 		"@types/fs-extra": "^5.0.2",
 		"@types/inquirer": "0.0.41",
 		"@types/json5": "^0.0.29",

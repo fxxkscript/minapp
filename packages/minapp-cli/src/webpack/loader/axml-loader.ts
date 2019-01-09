@@ -53,6 +53,7 @@ export default class AxmlLoader extends Loader {
    * 1. bind:xxx 和 catch:xxx => bindxxx 和 catchxxx
    * 2. 将 aaa.sync="bbb" xxx.sync="yyy" => aaa="{{bbb}}" xxx="{{yyy}}" minappsync="aaa=bbb&xxx=yyy"
    */
+  // @ts-ignore
   private updateNode(nodes: parser.Node[]) {
     iterateTagNode(nodes, node => {
       let minappsync: string[] = []
