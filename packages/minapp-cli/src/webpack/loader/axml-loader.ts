@@ -39,7 +39,7 @@ export default class AxmlLoader extends Loader {
     // this.updateNode(xml.nodes)
 
     let userOpts = this.options.format || {}
-    let reserveTags = ['text', 'view', 'button']
+    let reserveTags = ['text']
     content = xml.toXML(this.minimize
       ? {eol: '', tabSize: 0, removeComment: true, reserveTags, ...userOpts}
       : {eol: EOL, tabSize: 2, reserveTags, ...userOpts}
