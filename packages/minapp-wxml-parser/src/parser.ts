@@ -57,7 +57,7 @@ export function parse(xml: string) {
 
   function text(): TextNode {
     let start = location
-    return new TextNode(getTextContent().trim(), start, location)
+    return new TextNode(getTextContent(), start, location)
   }
 
   function getTextContent() {
