@@ -68,7 +68,7 @@ const plugins: any[] = [
   new CopyWebpackPlugin([
     { from: './src/assets/*', to: 'assets', flatten: true },
   ], {
-    debug: 'info',
+    debug: 'warning',
   })
 ]
 if (env.hasServer) {
