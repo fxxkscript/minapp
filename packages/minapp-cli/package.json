@@ -30,7 +30,7 @@
 	},
 	"dependencies": {
 		"@minapp/common": "^2.1.0",
-		"@changjinglu/xml-parser": "^2.1.4",
+		"@minapp/wxml-parser": "^2.1.4",
 		"autoprefixer": "^8.4.1",
 		"babel-core": "^6.26.3",
 		"babel-loader": "^7.1.4",
