@@ -44,7 +44,7 @@ export default class WxmlLoader extends Loader {
     this.updateNode(xml.nodes)
 
     let userOpts = this.options.format || {}
-    let reserveTags = ['text', 'view']
+    let reserveTags = ['text', 'view', 'button']
     content = xml.toXML(this.minimize
       ? {eol: '', tabSize: 0, removeComment: true, reserveTags, ...userOpts}
       : {eol: EOL, tabSize: 2, reserveTags, ...userOpts}
