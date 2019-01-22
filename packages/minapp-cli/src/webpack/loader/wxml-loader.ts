@@ -4,6 +4,8 @@ Author Mora <qiuzhongleiabc@126.com> (https://github.com/qiu8310)
 *******************************************************************/
 
 import * as parser from '@minapp/wxml-parser'
+import * as parse5 from 'parse5'
+import * as htmlparser from 'htmlparser2';
 import {EOL} from 'os'
 const debug = require('debug')('minapp:cli:wxml-loader')
 
@@ -21,35 +23,32 @@ export default class WxmlLoader extends Loader {
 
     this.lc.cacheable()
 
-    let xml: parser.Document
-    try {
-      xml = parser.parse(content)
-    } catch (e) {
-      parser.logParserError(content, e)
-      this.emitError(e)
-      return ''
-    }
+    let ast:any = parse5.parseFragment(content);
 
-    let assets = this.getNeedResolveAssets(xml.nodes)
+    // debug(parse5.serialize(ast));
+    let assets = this.getNeedResolveAssets(ast.childNodes)
     let requires: string[] = []
 
     if (assets.length) {
-      debug('include static assets: %o', assets.map(a => toString(a.node, a.attr)))
+      debug('include static assets: %o', assets.map((a: any) => toString(a.node, a.attr)))
       await this.resolveAssets(assets, requires)
-      debug('resolved static assets: %o', assets.map(a => toString(a.node, a.attr)))
+      debug('resolved static assets: %o', assets.map((a: any) => toString(a.node, a.attr)))
     } else {
       debug('no static assets')
     }
 
-    this.updateNode(xml.nodes)
+    this.updateNode(ast.childNodes)
 
-    let userOpts = this.options.format || {}
-    let reserveTags = ['text']
-    content = xml.toXML(this.minimize
-      ? {eol: '', tabSize: 0, removeComment: true, reserveTags, ...userOpts}
-      : {eol: EOL, tabSize: 2, reserveTags, ...userOpts}
-    )
-    // debug('ToContent: %o', content)
+    // let userOpts = this.options.format || {}
+    // let reserveTags = ['text']
+    // content = ast.toXML(this.minimize
+    //   ? {eol: '', tabSize: 0, removeComment: true, reserveTags, ...userOpts}
+    //   : {eol: EOL, tabSize: 2, reserveTags, ...userOpts}
+    // )
+
+    content = parse5.serialize(ast);
+
+    debug('ToContent: %o', content)
     this.extract('.wxml', content)
 
     return this.toRequire(requires)
@@ -59,10 +58,10 @@ export default class WxmlLoader extends Loader {
    * 1. bind:xxx 和 catch:xxx => bindxxx 和 catchxxx
    * 2. 将 aaa.sync="bbb" xxx.sync="yyy" => aaa="{{bbb}}" xxx="{{yyy}}" minappsync="aaa=bbb&xxx=yyy"
    */
-  private updateNode(nodes: parser.Node[]) {
+  private updateNode(nodes: []) {
     iterateTagNode(nodes, node => {
       let minappsync: string[] = []
-      node.attrs.forEach(attr => {
+      node.attrs.forEach((attr: any) => {
         let {name, value} = attr
         if (/^(bind|catch):(\w+)$/.test(name)) {
           attr.name = RegExp.$1 + RegExp.$2
@@ -78,18 +77,23 @@ export default class WxmlLoader extends Loader {
 
       if (minappsync.length) {
         node.attrs.push(
-          new parser.TagNodeAttr('minappsync', minappsync.join('&'), '"'),
-          new parser.TagNodeAttr('bindminappsyncupdate', 'minappsyncupdate', '"')
+          {
+            name: 'minappsync',
+            value: minappsync.join('&')
+          },
+          {
+            name: 'bindminappsyncupdate',
+            value: 'minappsyncupdate'
+          }
         )
       }
-
     })
   }
 
-  private getNeedResolveAssets(nodes: parser.Node[]): Asset[] {
-    let assets: Asset[] = []
+  private getNeedResolveAssets(nodes: any) {
+    let assets: any = [];
     iterateTagNode(nodes, node => {
-      node.attrs.forEach(attr => {
+      node.attrs.forEach((attr: any) => {
         let src = attr.value
         // 如果剩下的是个空字符串，去掉
         if (!src || typeof src !== 'string') return
@@ -143,11 +147,11 @@ export default class WxmlLoader extends Loader {
   }
 }
 
-function iterateTagNode(ns: parser.Node[], callback: (n: parser.TagNode) => void) {
-  ns.forEach(n => {
-    if (n.is(parser.Node.TYPE.TAG)) {
-      callback(n)
-      iterateTagNode(n.children, callback)
+function iterateTagNode(ns:any, callback: (n: any) => void) {
+  ns.forEach((n: any) => {
+    if (n.tagName) {
+      callback(n);
+      iterateTagNode(n.childNodes, callback);
     }
   })
 }
@@ -160,8 +164,8 @@ interface Asset {
   required?: boolean
 }
 
-function toString(node: parser.TagNode, attr: parser.TagNodeAttr) {
-  return `<${node.name} ${attr.toXML()}>`
+function toString(node: any, attr: any) {
+  return `<${node.tagName} ${attr.name}="${attr.value}">`
 }
 
 /**
