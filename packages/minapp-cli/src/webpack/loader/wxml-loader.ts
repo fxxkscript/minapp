@@ -3,10 +3,9 @@ MIT License http://www.opensource.org/licenses/mit-license.php
 Author Mora <qiuzhongleiabc@126.com> (https://github.com/qiu8310)
 *******************************************************************/
 
-import * as parser from '@minapp/wxml-parser'
-import * as parse5 from 'parse5'
-import * as htmlparser from 'htmlparser2';
-import {EOL} from 'os'
+import * as htmlparser from 'htmlparser2'
+// @ts-ignore
+import serializer from './serializer'
 const debug = require('debug')('minapp:cli:wxml-loader')
 
 import {Loader} from './Loader'
@@ -22,11 +21,10 @@ export default class WxmlLoader extends Loader {
     // debug('FromContent: ' + content)
 
     this.lc.cacheable()
+    // @ts-ignore
+    let ast = htmlparser.parseDOM(content);
 
-    let ast:any = parse5.parseFragment(content);
-
-    // debug(parse5.serialize(ast));
-    let assets = this.getNeedResolveAssets(ast.childNodes)
+    let assets = this.getNeedResolveAssets(ast)
     let requires: string[] = []
 
     if (assets.length) {
@@ -37,7 +35,7 @@ export default class WxmlLoader extends Loader {
       debug('no static assets')
     }
 
-    this.updateNode(ast.childNodes)
+    this.updateNode(ast)
 
     // let userOpts = this.options.format || {}
     // let reserveTags = ['text']
@@ -46,7 +44,7 @@ export default class WxmlLoader extends Loader {
     //   : {eol: EOL, tabSize: 2, reserveTags, ...userOpts}
     // )
 
-    content = parse5.serialize(ast);
+    content = serializer(ast, {xmlMode: true})
 
     debug('ToContent: %o', content)
     this.extract('.wxml', content)
@@ -58,11 +56,12 @@ export default class WxmlLoader extends Loader {
    * 1. bind:xxx 和 catch:xxx => bindxxx 和 catchxxx
    * 2. 将 aaa.sync="bbb" xxx.sync="yyy" => aaa="{{bbb}}" xxx="{{yyy}}" minappsync="aaa=bbb&xxx=yyy"
    */
-  private updateNode(nodes: []) {
+  private updateNode(nodes: any) {
     iterateTagNode(nodes, node => {
       let minappsync: string[] = []
-      node.attrs.forEach((attr: any) => {
-        let {name, value} = attr
+      Object.keys(node.attribs).forEach((name: any) => {
+        let value = node.attribs[name];
+        let attr = {name, value};
         if (/^(bind|catch):(\w+)$/.test(name)) {
           attr.name = RegExp.$1 + RegExp.$2
         } else if (name.endsWith('.sync') && typeof value === 'string') {
@@ -73,19 +72,12 @@ export default class WxmlLoader extends Loader {
           attr.name = name
           attr.value = `{{${value}}}`
         }
+        node.attribs[attr.name] = attr.value;
       })
 
       if (minappsync.length) {
-        node.attrs.push(
-          {
-            name: 'minappsync',
-            value: minappsync.join('&')
-          },
-          {
-            name: 'bindminappsyncupdate',
-            value: 'minappsyncupdate'
-          }
-        )
+        node.attribs['minappsync'] = minappsync.join('&');
+        node.attribs['bindminappsyncupdate'] = 'minappsyncupdate';
       }
     })
   }
@@ -93,8 +85,10 @@ export default class WxmlLoader extends Loader {
   private getNeedResolveAssets(nodes: any) {
     let assets: any = [];
     iterateTagNode(nodes, node => {
-      node.attrs.forEach((attr: any) => {
-        let src = attr.value
+      Object.keys(node.attribs).forEach((name: any) => {
+        let value = node.attribs[name]
+        let src = value
+        let attr = {name, value}
         // 如果剩下的是个空字符串，去掉
         if (!src || typeof src !== 'string') return
 
@@ -103,10 +97,10 @@ export default class WxmlLoader extends Loader {
 
         if (!this.shouleMakeResolveRequest(src)) return
 
-        if (attr.name === 'src') {
+        if (name === 'src') {
           // 这里的资源必须要存在
           assets.push({node, required: true, attr, src})
-        } else if (attr.name === 'style') {
+        } else if (name === 'style') {
           // 这里可能含有 url() 函数，也需要存在
           if (STYLE_RESOURCE_REGEXP.test(src)) assets.push({node, required: true, attr, src: RegExp.$1})
         } else {
@@ -122,7 +116,7 @@ export default class WxmlLoader extends Loader {
    * 1. emit 静态资源
    * 2. 将 import 和 include 标签中的 src 字段提取到 requires 中
    */
-  private async resolveAssets(assets: Asset[], requires: string[]) {
+  private async resolveAssets(assets: any[], requires: string[]) {
     await map(assets, async ({src, required, attr, node}, index) => {
       let absFile = await this.tryResolve(src)
       if (!absFile) {
@@ -141,6 +135,7 @@ export default class WxmlLoader extends Loader {
             attr.value = this.getExtractRequirePath(absFile)
             requires.push(absFile)
           }
+          node.attribs[attr.name] = attr.value;
         }
       }
     }, 5)
@@ -148,24 +143,19 @@ export default class WxmlLoader extends Loader {
 }
 
 function iterateTagNode(ns:any, callback: (n: any) => void) {
+  if (!ns) {
+    return;
+  }
   ns.forEach((n: any) => {
-    if (n.tagName) {
+    if (n.type === 'tag') {
       callback(n);
-      iterateTagNode(n.childNodes, callback);
+      iterateTagNode(n.children, callback);
     }
   })
 }
 
-
-interface Asset {
-  node: parser.TagNode
-  attr: parser.TagNodeAttr
-  src: string
-  required?: boolean
-}
-
 function toString(node: any, attr: any) {
-  return `<${node.tagName} ${attr.name}="${attr.value}">`
+  return `<${node.name} ${attr.name}="${attr.value}">`
 }
 
 /**
