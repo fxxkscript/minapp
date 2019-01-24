@@ -19,7 +19,7 @@ var unencodedElements = {
 /*
   Format attributes
 */
-function formatAttrs(attributes, opts) {
+function formatAttrs(attributes:any, opts:any) {
   if (!attributes) return;
 
   var output = '',
@@ -45,7 +45,7 @@ function formatAttrs(attributes, opts) {
 /*
   Self-enclosing tags (stolen from node-htmlparser)
 */
-var singleTag = {
+var singleTag:any = {
   __proto__: null,
   area: true,
   base: true,
@@ -96,9 +96,9 @@ export default function render(dom: any, opts: any) {
   return output;
 };
 
-function renderTag(elem: any, opts: any) {
+function renderTag(elem: Element, opts: Options) {
   // Handle SVG
-  if (elem.name === "svg") opts = {decodeEntities: opts.decodeEntities, xmlMode: true};
+  if (elem.name === "svg") opts.xmlMode = true;
 
   var tag = '<' + elem.name,
       attribs = formatAttrs(elem.attribs, opts);
@@ -125,11 +125,11 @@ function renderTag(elem: any, opts: any) {
   return tag;
 }
 
-function renderDirective(elem) {
+function renderDirective(elem:any) {
   return '<' + elem.data + '>';
 }
 
-function renderText(elem, opts) {
+function renderText(elem: Element, opts: Options) {
   var data = elem.data || '';
 
   if (opts.minimize) {
@@ -146,14 +146,30 @@ function renderText(elem, opts) {
   return data;
 }
 
-function renderCdata(elem) {
+function renderCdata(elem: Element) {
   return '<![CDATA[' + elem.children[0].data + ']]>';
 }
 
-function renderComment(elem, opts) {
+function renderComment(elem: Element, opts: Options) {
   if (!opts.minimize) {
     return '<!--' + elem.data + '-->';
   } else {
     return '';
   }
+}
+
+interface Element {
+  type: string,
+  name: string,
+  data?: string,
+  children: Element[],
+  parent?: Element,
+  attribs?: string[]
+}
+
+interface Options {
+  minimize: boolean,
+  xmlMode?: boolean,
+  decodeEntities?: boolean,
+  reserveTags: string[]
 }

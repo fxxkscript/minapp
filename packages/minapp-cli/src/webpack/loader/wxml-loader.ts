@@ -4,7 +4,6 @@ Author Mora <qiuzhongleiabc@126.com> (https://github.com/qiu8310)
 *******************************************************************/
 
 import * as htmlparser from 'htmlparser2'
-// @ts-ignore
 import serializer from './serializer'
 const debug = require('debug')('minapp:cli:wxml-loader')
 
