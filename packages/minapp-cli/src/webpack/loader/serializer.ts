@@ -72,6 +72,7 @@ var singleTag = {
 export default function render(dom: any, opts: any) {
   if (!Array.isArray(dom) && !dom.cheerio) dom = [dom];
   opts = opts || {};
+  opts.reserveTags = opts.reserveTags || ['text'];
 
   var output = '';
 
@@ -85,7 +86,7 @@ export default function render(dom: any, opts: any) {
     else if (elem.type === ElementType.Directive)
       output += renderDirective(elem);
     else if (elem.type === ElementType.Comment)
-      output += renderComment(elem);
+      output += renderComment(elem, opts);
     else if (elem.type === ElementType.CDATA)
       output += renderCdata(elem);
     else
@@ -131,6 +132,12 @@ function renderDirective(elem) {
 function renderText(elem, opts) {
   var data = elem.data || '';
 
+  if (opts.minimize) {
+    if (!(elem.parent && elem.parent.type === 'tag' && opts.reserveTags.indexOf(elem.parent.name) >= 0)) {
+      data = data.replace(/\n/g, '').trim();
+    }
+  }
+
   // if entities weren't decoded, no need to encode them back
   if (opts.decodeEntities && !(elem.parent && elem.parent.name in unencodedElements)) {
     data = entities.encodeXML(data);
@@ -143,6 +150,10 @@ function renderCdata(elem) {
   return '<![CDATA[' + elem.children[0].data + ']]>';
 }
 
-function renderComment(elem) {
-  return '<!--' + elem.data + '-->';
+function renderComment(elem, opts) {
+  if (!opts.minimize) {
+    return '<!--' + elem.data + '-->';
+  } else {
+    return '';
+  }
 }

@@ -22,7 +22,7 @@ export default class WxmlLoader extends Loader {
 
     this.lc.cacheable()
     // @ts-ignore
-    let ast = htmlparser.parseDOM(content);
+    let ast = htmlparser.parseDOM(content, {xmlMode: true});
 
     let assets = this.getNeedResolveAssets(ast)
     let requires: string[] = []
@@ -37,14 +37,14 @@ export default class WxmlLoader extends Loader {
 
     this.updateNode(ast)
 
-    // let userOpts = this.options.format || {}
-    // let reserveTags = ['text']
-    // content = ast.toXML(this.minimize
-    //   ? {eol: '', tabSize: 0, removeComment: true, reserveTags, ...userOpts}
-    //   : {eol: EOL, tabSize: 2, reserveTags, ...userOpts}
-    // )
-
-    content = serializer(ast, {xmlMode: true})
+    let userOpts = this.options.format || {}
+    let reserveTags = ['text', 'button']
+    content = serializer(ast, {
+        xmlMode: true,
+        minimize: this.minimize,
+        reserveTags,
+        ...userOpts
+      })
 
     debug('ToContent: %o', content)
     this.extract('.wxml', content)
