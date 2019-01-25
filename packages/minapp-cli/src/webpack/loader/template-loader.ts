@@ -170,7 +170,7 @@ function iterateTagNode(ns: Element[], callback: (n: any) => void) {
   })
 }
 
-function toString(node: any, attr: any) {
+function toString(node: Element, attr: Attr) {
   return `<${node.name} ${attr.name}="${attr.value}">`
 }
 
@@ -183,10 +183,14 @@ function stripBrackets(str: string) {
     : str
 }
 
+interface Attr {
+  name: string,
+  value: string
+}
 
 interface Asset {
   node: Element
-  attr: {name: string, value: string}
+  attr: Attr
   src: string
   required?: boolean
 }
