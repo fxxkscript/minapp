@@ -72,7 +72,7 @@ export default class TemplateLoader extends Loader {
    * 1. bind:xxx 和 catch:xxx => bindxxx 和 catchxxx
    * 2. 将 aaa.sync="bbb" xxx.sync="yyy" => aaa="{{bbb}}" xxx="{{yyy}}" minappsync="aaa=bbb&xxx=yyy"
    */
-  private updateNode(nodes: any) {
+  private updateNode(nodes: Element[]) {
     iterateTagNode(nodes, node => {
       let minappsync: string[] = []
       Object.keys(node.attribs).forEach((name: any) => {
