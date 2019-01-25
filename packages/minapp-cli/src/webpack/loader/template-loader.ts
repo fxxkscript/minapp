@@ -132,7 +132,7 @@ export default class TemplateLoader extends Loader {
    * 1. emit 静态资源
    * 2. 将 import 和 include 标签中的 src 字段提取到 requires 中
    */
-  private async resolveAssets(assets: any[], requires: string[]) {
+  private async resolveAssets(assets: Asset[], requires: string[]) {
     await map(assets, async ({src, required, attr, node}, index) => {
       let absFile = await this.tryResolve(src)
       if (!absFile) {
@@ -158,7 +158,7 @@ export default class TemplateLoader extends Loader {
   }
 }
 
-function iterateTagNode(ns:any, callback: (n: any) => void) {
+function iterateTagNode(ns: Element[], callback: (n: any) => void) {
   if (!ns) {
     return;
   }

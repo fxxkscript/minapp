@@ -164,7 +164,7 @@ export interface Element {
   data?: string,
   children: Element[],
   parent?: Element,
-  attribs?: string[]
+  attribs: {[key: string]: string}
 }
 
 interface Options {
