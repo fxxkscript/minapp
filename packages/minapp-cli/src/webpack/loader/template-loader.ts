@@ -10,6 +10,7 @@ import * as webpack from 'webpack'
 
 import {Loader} from './Loader'
 import {map, STYLE_RESOURCE_REGEXP} from '../util'
+import { Element } from 'parse5';
 
 const PATH_REGEXP = /^\.\.?\/\w[\w-\/\.\$!@]*$/ // 匹配是否是文件路径（需要以 / 或 ./ 或 ../ 开头）
 
@@ -98,8 +99,8 @@ export default class TemplateLoader extends Loader {
     })
   }
 
-  private getNeedResolveAssets(nodes: any) {
-    let assets: any = [];
+  private getNeedResolveAssets(nodes: Element[]) {
+    let assets: Asset[] = [];
     iterateTagNode(nodes, node => {
       Object.keys(node.attribs).forEach((name: any) => {
         let value = node.attribs[name]
@@ -181,4 +182,12 @@ function stripBrackets(str: string) {
   return str.startsWith('{{') && str.endsWith('}}')
     ? str.substr(2, str.length - 4).trim()
     : str
+}
+
+
+interface Asset {
+  node: Element
+  attr: {name: string, value: string}
+  src: string
+  required?: boolean
 }
