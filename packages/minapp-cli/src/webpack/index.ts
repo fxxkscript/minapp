@@ -41,7 +41,7 @@ export function getLoader(env: Env) {
     js: toLoader('js-loader', {}),
     wxs: toLoader('wxs-loader', {}),
     wxml: toLoader('template-loader', {target: 'weixin'}),
-    axml: toLoader('axml-loader', {target: 'alipay'}),
+    axml: toLoader('template-loader', {target: 'alipay'}),
     pug: toLoader('pug-loader', {}),
     wxss: toLoader('wxss-loader', {}),
     acss: toLoader('acss-loader', {}),
