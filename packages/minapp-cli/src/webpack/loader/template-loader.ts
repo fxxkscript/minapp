@@ -4,13 +4,12 @@ Author Mora <qiuzhongleiabc@126.com> (https://github.com/qiu8310)
 *******************************************************************/
 
 import * as htmlparser from 'htmlparser2'
-import serializer from './serializer'
+import serializer, { Element } from './serializer'
 const debug = require('debug')('minapp:cli:template-loader')
 import * as webpack from 'webpack'
 
 import {Loader} from './Loader'
 import {map, STYLE_RESOURCE_REGEXP} from '../util'
-import { Element } from 'parse5';
 
 const PATH_REGEXP = /^\.\.?\/\w[\w-\/\.\$!@]*$/ // 匹配是否是文件路径（需要以 / 或 ./ 或 ../ 开头）
 

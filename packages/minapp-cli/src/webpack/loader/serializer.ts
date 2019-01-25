@@ -158,7 +158,7 @@ function renderComment(elem: Element, opts: Options) {
   }
 }
 
-interface Element {
+export interface Element {
   type: string,
   name: string,
   data?: string,
