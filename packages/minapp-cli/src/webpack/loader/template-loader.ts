@@ -44,9 +44,9 @@ export default class TemplateLoader extends Loader {
     let requires: string[] = []
 
     if (assets.length) {
-      debug('include static assets: %o', assets.map((a: any) => toString(a.node, a.attr)))
+      debug('include static assets: %o', assets.map((a: Asset) => toString(a.node, a.attr)))
       await this.resolveAssets(assets, requires)
-      debug('resolved static assets: %o', assets.map((a: any) => toString(a.node, a.attr)))
+      debug('resolved static assets: %o', assets.map((a: Asset) => toString(a.node, a.attr)))
     } else {
       debug('no static assets')
     }
