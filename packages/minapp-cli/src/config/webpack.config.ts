@@ -11,6 +11,7 @@ import {localConfig} from './local'
 import {env} from './env'
 import {JSON_REGEXP} from '../base/helper'
 import {getLoader, ExtractMinappCode, WriteFile, RemoveLessCache} from '../webpack/'
+import { FileType } from '../webpack/loader/ifdef-loader';
 
 const {mode, entry, rootDir, srcDir, distDir, modulesDir} = env
 
@@ -107,14 +108,14 @@ let wpConf: webpack.Configuration = {
 
       // 脚本
       {test: /\.ts$/i, use: [loader.js, loader.ts]},
-      {test: /\.js$/i, include: srcDir, use: [loader.js, loader.babel]},
+      {test: /\.js$/i, include: srcDir, use: [loader.ifdef({fileType: FileType.JS}), loader.js, loader.babel]},
       {test: /\.js$/i, exclude: srcDir, use: [loader.js]},
 
       {test: /\.wxs$/i, use: [loader.wxs, loader.babel]},
 
       // 模板
-      {test: /\.wxml$/i, use: loader.wxml},
-      {test: /\.axml$/i, use: loader.axml},
+      {test: /\.wxml$/i, use: [loader.wxml]},
+      {test: /\.axml$/i, use: [loader.axml]},
       {test: /\.(pug|wpug)$/i, use: [loader.wxml, loader.pug]},
 
       // 样式

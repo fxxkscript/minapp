@@ -57,7 +57,9 @@ export namespace minapp {
     browsers: string[]
 
     /** webpack devServer 配置 */
-    devServer: {[key: string]: any}
+    devServer: {[key: string]: any},
+
+    target: string
   }
 
   export interface Config {

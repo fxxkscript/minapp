@@ -7,6 +7,7 @@ import * as webpack from 'webpack'
 import * as path from 'path'
 import {Env, projectType} from '../../config/env'
 import {getProjectRoot, readFile, md5, toUrlPath, toRelative, JSON_REGEXP, replaceExt, base64EncodeBuffer} from '../util'
+import { parse, FileType } from './ifdef-loader';
 const mime = require('mime')
 
 export abstract class Loader {
@@ -286,6 +287,28 @@ export abstract class Loader {
 
   /** Should the result be minimized. */
   get minimize() { return this.env.mode === 'production' && !this.env.pretty }
+
+  conditionalParse(content: string, fileType: FileType): string {
+    // 条件编译
+    let WX = false;
+    let ALIPAY = false;
+
+    if (this.env.minapp.compiler.target === 'alipay') {
+      WX = false;
+      ALIPAY = true;
+    } else {
+      WX = true;
+      ALIPAY = false;
+    }
+
+    let DEBUG = false;
+    if (this.env.mode === 'development') {
+      DEBUG = true;
+    }
+
+    content = parse(content, {WX, ALIPAY, DEBUG}, true, false, fileType);
+    return content;
+  }
 }
 
 /** 获取一个文件相对于它的项目根目录的路径 */
