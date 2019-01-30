@@ -7,7 +7,6 @@ import {Loader} from './Loader'
 import {replace, STYLE_RESOURCE_REGEXP, CSS_IMPORT_REGEXP, CSS_COMMENT_IMPORT_REGEXP} from '../util'
 const debug = require('debug')('minapp:cli:wxss-loader')
 import * as webpack from 'webpack'
-import { FileType } from './ifdef-loader';
 
 @Loader.decorate
 export default class WxssLoader extends Loader {
@@ -33,7 +32,6 @@ export default class WxssLoader extends Loader {
     debug('ToFile: %o', this.toFile)
 
     this.lc.cacheable()
-    content = this.conditionalParse(content, FileType.CSS);
 
     let emitContent = await replace(content, STYLE_RESOURCE_REGEXP, async (mat) => {
       let [raw, request] = mat

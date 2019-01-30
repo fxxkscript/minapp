@@ -7,7 +7,6 @@ import * as htmlparser from 'htmlparser2'
 import serializer, { Element } from './serializer'
 const debug = require('debug')('minapp:cli:template-loader')
 import * as webpack from 'webpack'
-import { FileType } from './ifdef-loader'
 
 import {Loader} from './Loader'
 import {map, STYLE_RESOURCE_REGEXP} from '../util'
@@ -38,7 +37,6 @@ export default class TemplateLoader extends Loader {
     // debug('FromContent: ' + content)
 
     this.lc.cacheable()
-    content = this.conditionalParse(content, FileType.HTML);
 
     // @ts-ignore
     let ast = htmlparser.parseDOM(content, {xmlMode: true});

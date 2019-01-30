@@ -108,14 +108,14 @@ let wpConf: webpack.Configuration = {
 
       // 脚本
       {test: /\.ts$/i, use: [loader.js, loader.ts]},
-      {test: /\.js$/i, include: srcDir, use: [loader.ifdef({fileType: FileType.JS}), loader.js, loader.babel]},
+      {test: /\.js$/i, include: srcDir, use: [loader.js, loader.babel, loader.ifdef({fileType: FileType.JS, 'ifdef-triple-slash': false})]},
       {test: /\.js$/i, exclude: srcDir, use: [loader.js]},
 
       {test: /\.wxs$/i, use: [loader.wxs, loader.babel]},
 
       // 模板
-      {test: /\.wxml$/i, use: [loader.wxml]},
-      {test: /\.axml$/i, use: [loader.axml]},
+      {test: /\.wxml$/i, use: [loader.wxml, loader.ifdef({fileType: FileType.HTML, 'ifdef-triple-slash': false})]},
+      {test: /\.axml$/i, use: [loader.axml, loader.ifdef({fileType: FileType.HTML, 'ifdef-triple-slash': false})]},
       {test: /\.(pug|wpug)$/i, use: [loader.wxml, loader.pug]},
 
       // 样式
@@ -125,7 +125,7 @@ let wpConf: webpack.Configuration = {
 
       {test: /\.s(c|a)ss$/i, use: [loader.wxss, loader.postcss, loader.sass, loader.json2sass]},
       {test: /\.less$/i, use: [loader.wxss, loader.postcss, loader.less]},
-      {test: /\.(css|wxss)$/i, include: srcDir, use: [loader.wxss, loader.postcss]},
+      {test: /\.(css|wxss)$/i, include: srcDir, use: [loader.wxss, loader.postcss, loader.ifdef({fileType: FileType.CSS, 'ifdef-triple-slash': false})]},
       {test: /\.(css|wxss)$/i, exclude: srcDir, use: [loader.wxss]},
 
     ]
