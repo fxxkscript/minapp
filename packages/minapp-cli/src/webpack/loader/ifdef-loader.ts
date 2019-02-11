@@ -267,8 +267,9 @@ function evaluate(condition: string, defs: object): boolean {
 
   let result: boolean;
   try {
-    const f = new Function(...args, code);
-    result = f(...args.map((k) => defs[k]));
+   const f = new Function(...args, code);
+   // @ts-ignore
+   result = f(...args.map((k) => defs[k]));
      //console.log(`evaluation of (${condition}) === ${result}`);
   }
   catch(error) {
@@ -282,6 +283,7 @@ function blank_code(lines: string[], start: number, end: number = start) {
   for(let t=start; t<=end; t++) {
      const len = lines[t].length;
      const lastChar = lines[t].charAt(len-1);
+     // @ts-ignore
      const windowsTermination = lastChar === '\r';
 
      lines[t] = '';
