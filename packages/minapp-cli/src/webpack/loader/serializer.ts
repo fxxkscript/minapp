@@ -33,7 +33,7 @@ function formatAttrs(attributes:any, opts:any) {
     }
 
     output += key;
-    if ((value !== null && value !== '') || opts.xmlMode) {
+    if (value !== null && value !== '') {
       value = value.replace(/"/g, '\'');
       output += '="' + (opts.decodeEntities ? entities.encodeXML(value) : value) + '"';
     }
