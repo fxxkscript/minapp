@@ -22,6 +22,8 @@ function toLoader(key: string, options: {[key: string]: any} = {}) {
 export function getLoader(env: Env) {
 
   let {browsers, unitTransformer, json2sassPath, target} = env.minapp.compiler
+  // 默认编译到微信
+  target = target || 'weixin'
 
   let plugins: any[] = []
   if (Object.keys(unitTransformer).length) {
