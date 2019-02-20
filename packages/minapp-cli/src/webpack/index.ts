@@ -49,11 +49,11 @@ export function getLoader(env: Env) {
     json2sass: toLoader('json2sass-loader', {path: json2sassPath}),
     js: toLoader('js-loader', {}),
     wxs: toLoader('wxs-loader', {}),
-    wxml: toLoader('template-loader', {target: 'weixin'}),
-    axml: toLoader('template-loader', {target: 'alipay'}),
+    wxml: toLoader('template-loader', {target}),
+    axml: toLoader('template-loader', {target}),
     pug: toLoader('pug-loader', {}),
-    wxss: toLoader('wxss-loader', {target: 'weixin'}),
-    acss: toLoader('wxss-loader', {target: 'alipay'}),
+    wxss: toLoader('wxss-loader', {target}),
+    acss: toLoader('wxss-loader', {target}),
     postcss: toLoader('postcss-loader', {plugins}),
     ifdef: (options:object) => toLoader('ifdef-loader', {WX, ALIPAY, DEBUG: env.mode === 'development', ...options})
   }
