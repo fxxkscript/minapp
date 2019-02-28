@@ -19,7 +19,7 @@ export const buildOptions: cli.Options = {
  */
 export function buildCommand(res: cli.Response) {
 
-  process.env.NODE_ENV = 'production'
+  process.env.NODE_ENV = process.env.NODE_ENV ? process.env.NODE_ENV :'production'
   if (res.srcDir)  process.env.MINAPP_SRC_DIR = res.srcDir
   if (res.distDir) process.env.MINAPP_DIST_DIR = res.distDir
   if (res.pretty)  process.env.MINAPP_PRETTY = 'true'
