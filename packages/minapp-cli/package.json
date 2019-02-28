@@ -1,7 +1,7 @@
 {
 	"name": "@changjinglu/cli",
 	"description": "changjinglu mini app 命令行工具，用于创建项目、开发项目、编译项目",
-	"version": "3.0.2",
+	"version": "3.0.3",
 	"bin": {
 		"supra": "dist/bin/minapp.js"
 	},
