@@ -70,7 +70,7 @@
     "@types/portscanner": "~2.1.0",
     "@types/pug": "~2.0.4",
     "@types/webpack": "~4.1.4",
-    "@types/webpack-dev-server": "~2.9.4",
+    "@types/webpack-dev-server": "^2.9.6",
     "@types/webpack-sources": "~0.1.4",
     "ts-lint": "~4.5.1",
     "typescript": "~2.8.0"
