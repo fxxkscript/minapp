@@ -21,7 +21,9 @@ function toLoader(key: string, options: {[key: string]: any} = {}) {
 
 export function getLoader(env: Env) {
 
-  let {browsers, unitTransformer, json2sassPath} = env.minapp.compiler
+  let {browsers, unitTransformer, json2sassPath, target} = env.minapp.compiler
+  // 默认编译到微信
+  target = target || 'weixin'
 
   let plugins: any[] = []
   if (Object.keys(unitTransformer).length) {
@@ -35,16 +37,26 @@ export function getLoader(env: Env) {
     add: true
   }))
 
+  let WX = false;
+  let ALIPAY = false;
+  if (target === 'weixin') {
+    WX = true;
+  }
+  if (target === 'alipay') {
+    ALIPAY = true;
+  }
+
   return {
     json: toLoader('json-loader', {}),
     json2sass: toLoader('json2sass-loader', {path: json2sassPath}),
     js: toLoader('js-loader', {}),
     wxs: toLoader('wxs-loader', {}),
-    wxml: toLoader('template-loader', {target: 'weixin'}),
-    axml: toLoader('template-loader', {target: 'alipay'}),
+    wxml: toLoader('template-loader', {target}),
+    axml: toLoader('template-loader', {target}),
     pug: toLoader('pug-loader', {}),
-    wxss: toLoader('wxss-loader', {}),
-    acss: toLoader('acss-loader', {}),
+    wxss: toLoader('wxss-loader', {target}),
+    acss: toLoader('wxss-loader', {target}),
     postcss: toLoader('postcss-loader', {plugins}),
+    ifdef: (options:object) => toLoader('ifdef-loader', {WX, ALIPAY, DEBUG: env.mode === 'development', ...options})
   }
 }

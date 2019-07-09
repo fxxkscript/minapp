@@ -286,6 +286,7 @@ export abstract class Loader {
 
   /** Should the result be minimized. */
   get minimize() { return this.env.mode === 'production' && !this.env.pretty }
+
 }
 
 /** 获取一个文件相对于它的项目根目录的路径 */

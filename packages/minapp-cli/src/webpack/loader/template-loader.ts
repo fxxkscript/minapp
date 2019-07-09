@@ -37,6 +37,7 @@ export default class TemplateLoader extends Loader {
     // debug('FromContent: ' + content)
 
     this.lc.cacheable()
+
     // @ts-ignore
     let ast = htmlparser.parseDOM(content, {xmlMode: true});
 
