@@ -3,20 +3,7 @@ import { ASTElement, ASTNode, ASTText, ASTExpression } from 'vue-template-compil
 /*
   Module dependencies
 */
-var ElementType = require('domelementtype');
 var entities = require('entities');
-
-var unencodedElements = {
-  __proto__: null,
-  style: true,
-  script: true,
-  xmp: true,
-  iframe: true,
-  noembed: true,
-  noframes: true,
-  plaintext: true,
-  noscript: true
-};
 
 /*
   Format attributes
