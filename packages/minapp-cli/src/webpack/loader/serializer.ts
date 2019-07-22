@@ -1,3 +1,5 @@
+import { ASTElement, ASTNode, ASTText, ASTExpression } from 'vue-template-compiler';
+
 /*
   Module dependencies
 */
@@ -19,15 +21,14 @@ var unencodedElements = {
 /*
   Format attributes
 */
-function formatAttrs(attributes:any, opts:any) {
-  if (!attributes) return;
+function formatAttrs(attributes: Record<string, any>, opts:any) {
+  if (attributes.length <= 0) return;
 
-  var output = '',
-      value;
+  var output = '';
 
   // Loop through the attributes
-  for (var key in attributes) {
-    value = attributes[key];
+  Object.keys(attributes).forEach(key => {
+    let value = attributes[key];
     if (output) {
       output += ' ';
     }
@@ -37,7 +38,8 @@ function formatAttrs(attributes:any, opts:any) {
       value = value.replace(/"/g, '\'');
       output += '="' + (opts.decodeEntities ? entities.encodeXML(value) : value) + '"';
     }
-  }
+  });
+
 
   return output;
 }
@@ -69,39 +71,43 @@ var singleTag:any = {
 };
 
 
-export default function render(dom: any, opts: any) {
-  if (!Array.isArray(dom) && !dom.cheerio) dom = [dom];
+export default function render(ast: ASTNode | undefined, opts: any) {
+  if (!ast) {
+    return '';
+  }
   opts = opts || {};
   opts.reserveTags = opts.reserveTags || ['text'];
 
   var output = '';
 
-  for(var i = 0; i < dom.length; i++){
-    var elem = dom[i];
-
-    if (elem.type === 'root')
-      output += render(elem.children, opts);
-    else if (ElementType.isTag(elem))
-      output += renderTag(elem, opts);
-    else if (elem.type === ElementType.Directive)
-      output += renderDirective(elem);
-    else if (elem.type === ElementType.Comment)
-      output += renderComment(elem, opts);
-    else if (elem.type === ElementType.CDATA)
-      output += renderCdata(elem);
-    else
-      output += renderText(elem, opts);
-  }
+  if (ast.type === 1)
+    output += renderTag(ast, opts);
+  else if (ast.type === 2)
+    output += renderExpression(ast, opts);
+  else if (ast.type === 3)
+    output += renderText(ast, opts);
+  else
+    console.log(ast);
 
   return output;
 };
 
-function renderTag(elem: Element, opts: Options) {
-  // Handle SVG
-  if (elem.name === "svg") opts.xmlMode = true;
+function renderTag(elem: ASTElement, opts: Options) {
+  if (elem.tag === 'global-wrap') {
+    var tag = ''
+    if (elem.children) {
+      elem.children.forEach(item => {
+        tag += render(item, opts)
+      })
+    }
+    return tag
+  };
 
-  var tag = '<' + elem.name,
-      attribs = formatAttrs(elem.attribs, opts);
+  // Handle SVG
+  if (elem.tag === "svg") opts.xmlMode = true;
+
+  var tag = '<' + elem.tag,
+      attribs = formatAttrs(elem.attrsMap, opts);
   if (attribs) {
     tag += ' ' + attribs;
   }
@@ -114,48 +120,35 @@ function renderTag(elem: Element, opts: Options) {
   } else {
     tag += '>';
     if (elem.children) {
-      tag += render(elem.children, opts);
+      elem.children.forEach(item => {
+        tag += render(item, opts)
+      });
     }
 
-    if (!singleTag[elem.name] || opts.xmlMode) {
-      tag += '</' + elem.name + '>';
+    if (!singleTag[elem.tag] || opts.xmlMode) {
+      tag += '</' + elem.tag + '>';
     }
   }
 
   return tag;
 }
 
-function renderDirective(elem:any) {
-  return '<' + elem.data + '>';
+function renderExpression(elem:ASTExpression, opts: Options) {
+  return elem.text;
 }
 
-function renderText(elem: Element, opts: Options) {
-  var data = elem.data || '';
+function renderText(elem: ASTText, opts: Options) {
+  var data = elem.text || '';
+  // if (opts.minimize) {
+  //   data = data.replace(/\n/g, '').trim();
+  // }
 
-  if (opts.minimize) {
-    if (!(elem.parent && elem.parent.type === 'tag' && opts.reserveTags.indexOf(elem.parent.name) >= 0)) {
-      data = data.replace(/\n/g, '').trim();
-    }
-  }
-
-  // if entities weren't decoded, no need to encode them back
-  if (opts.decodeEntities && !(elem.parent && elem.parent.name in unencodedElements)) {
-    data = entities.encodeXML(data);
-  }
+  // // if entities weren't decoded, no need to encode them back
+  // if (opts.decodeEntities) {
+  //   data = entities.encodeXML(data);
+  // }
 
   return data;
-}
-
-function renderCdata(elem: Element) {
-  return '<![CDATA[' + elem.children[0].data + ']]>';
-}
-
-function renderComment(elem: Element, opts: Options) {
-  if (!opts.minimize) {
-    return '<!--' + elem.data + '-->';
-  } else {
-    return '';
-  }
 }
 
 export interface Element {

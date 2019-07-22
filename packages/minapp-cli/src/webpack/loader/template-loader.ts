@@ -3,10 +3,10 @@ MIT License http://www.opensource.org/licenses/mit-license.php
 Author Mora <qiuzhongleiabc@126.com> (https://github.com/qiu8310)
 *******************************************************************/
 
-import * as htmlparser from 'htmlparser2'
-import serializer, { Element } from './serializer'
+import serializer from './serializer'
 const debug = require('debug')('minapp:cli:template-loader')
 import * as webpack from 'webpack'
+import { compile, ASTElement, ASTNode } from 'vue-template-compiler'
 
 import {Loader} from './Loader'
 import {map, STYLE_RESOURCE_REGEXP} from '../util'
@@ -39,7 +39,8 @@ export default class TemplateLoader extends Loader {
     this.lc.cacheable()
 
     // @ts-ignore
-    let ast = htmlparser.parseDOM(content, {xmlMode: true});
+    let result = compile(`<global-wrap>${content}</global-wrap>`);
+    let ast = result.ast;
 
     let assets = this.getNeedResolveAssets(ast)
     let requires: string[] = []
@@ -52,7 +53,7 @@ export default class TemplateLoader extends Loader {
       debug('no static assets')
     }
 
-    this.updateNode(ast)
+    // this.updateNode(ast)
 
     let userOpts = this.options.format || {}
     let reserveTags = ['text', 'button']
@@ -73,12 +74,16 @@ export default class TemplateLoader extends Loader {
    * 1. bind:xxx 和 catch:xxx => bindxxx 和 catchxxx
    * 2. 将 aaa.sync="bbb" xxx.sync="yyy" => aaa="{{bbb}}" xxx="{{yyy}}" minappsync="aaa=bbb&xxx=yyy"
    */
-  private updateNode(nodes: Element[]) {
-    iterateTagNode(nodes, node => {
+  private updateNode(ast: ASTElement | undefined) {
+    if (!ast) {
+      return;
+    }
+    iterateTagNode(ast, node => {
       let minappsync: string[] = []
-      Object.keys(node.attribs).forEach((name: any) => {
-        let value = node.attribs[name];
-        let attr = {name, value};
+      Object.keys(node.attrsMap).forEach(key => {
+        let name = key
+        let value = node.attrsMap[key]
+        let attr = {name, value}
         if (/^(bind|catch):(\w+)$/.test(name)) {
           attr.name = RegExp.$1 + RegExp.$2
         } else if (name.endsWith('.sync') && typeof value === 'string') {
@@ -99,11 +104,15 @@ export default class TemplateLoader extends Loader {
     })
   }
 
-  private getNeedResolveAssets(nodes: Element[]) {
+  private getNeedResolveAssets(ast: ASTElement | undefined) {
     let assets: Asset[] = [];
-    iterateTagNode(nodes, node => {
-      Object.keys(node.attribs).forEach((name: any) => {
-        let value = node.attribs[name]
+    if (!ast) {
+      return assets;
+    }
+    iterateTagNode(ast, node => {
+      Object.keys(node.attrsMap).forEach(key => {
+        let name = key
+        let value = node.attrsMap[key]
         let src = value
         let attr = {name, value}
         // 如果剩下的是个空字符串，去掉
@@ -144,7 +153,7 @@ export default class TemplateLoader extends Loader {
         if (this.shouleMakeRequireFile(absFile)) {
           if (this.isStaticFile(absFile) && typeof attr.value === 'string') {
             attr.value = attr.value.replace(src, await this.loadStaticFile(absFile, src, false))
-          } else if (node.name === 'import' || node.name === 'include') {
+          } else if (node.tag === 'import' || node.tag === 'include') {
             attr.value = this.getExtractRequirePath(absFile, this.ext)
             requires.push(absFile)
           } else {
@@ -152,27 +161,30 @@ export default class TemplateLoader extends Loader {
             attr.value = this.getExtractRequirePath(absFile)
             requires.push(absFile)
           }
-          node.attribs[attr.name] = attr.value;
+
+          node.attrsMap[attr.name] = attr.value;
         }
       }
     }, 5)
   }
 }
 
-function iterateTagNode(ns: Element[], callback: (n: any) => void) {
-  if (!ns) {
+function iterateTagNode(ast: ASTElement, callback: (n: any) => void) {
+  if (!ast) {
     return;
   }
-  ns.forEach((n: any) => {
-    if (n.type === 'tag') {
-      callback(n);
-      iterateTagNode(n.children, callback);
+
+  callback(ast);
+
+  ast.children.forEach((node: ASTNode) => {
+    if (node.type === 1) {
+      iterateTagNode(node, callback);
     }
   })
 }
 
-function toString(node: Element, attr: Attr) {
-  return `<${node.name} ${attr.name}="${attr.value}">`
+function toString(node: ASTElement, attr: Attr) {
+  return `<${node.tag} ${attr.name}="${attr.value}">`
 }
 
 /**
@@ -190,7 +202,7 @@ interface Attr {
 }
 
 interface Asset {
-  node: Element
+  node: ASTElement
   attr: Attr
   src: string
   required?: boolean
