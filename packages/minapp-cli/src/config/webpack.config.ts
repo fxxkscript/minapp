@@ -4,6 +4,7 @@
 *******************************************************************/
 
 import * as webpack from 'webpack'
+import CopyWebpackPlugin = require('copy-webpack-plugin')
 import * as path from 'path'
 import * as fs from 'fs-extra'
 import {localConfig} from './local'
@@ -55,6 +56,9 @@ loader = local.updateLoaders(loader)
 
 // #region plugins
 const plugins: any[] = [
+  new CopyWebpackPlugin([
+    { from: 'src/assets', to: 'assets' },
+  ]),
   new webpack.LoaderOptionsPlugin({env}),
   new webpack.DefinePlugin({
     __ENV__: JSON.stringify(mode),
